@@ -2,40 +2,64 @@ import React, {ReactNode} from 'react';
 
 interface Data {[key: string]: any}
 interface Props {
-  data: Data[],
-  render: (data: Data) => ReactNode
+  data: Data[];
+  onStop?: (selected?: any) => void;
+  blockStop?: boolean;
+  render: (data: any) => ReactNode;
+}
+interface State {
+  timer?: any;
+  hasStarted: boolean;
+  randomIndex: number;
 }
 
-export const RandomCard: React.FC<Props> = (props) => {
-  const dataKeys = Object.keys(props.data);
-  const [randomIndex, setRandomIndex] = React.useState(0);
-  const [timer, setTimer] = React.useState<any>();
-  const [hasStarted, setStarted] = React.useState<boolean>();
-
-  const intervalCallback = React.useCallback(() => {
-    setRandomIndex(Math.floor(Math.random() * dataKeys.length))
-  }, [dataKeys])
-
-  const toogleTimer = React.useCallback(() => {
+export class RandomCard extends React.PureComponent<Props, State> {
+  constructor(props: Props) {
+    super(props);
+    this.state = {
+      randomIndex: 0,
+      hasStarted: false
+    }
+  }
+  componentDidMount() {
+    this.toogleTimer()
+  }
+  componentWillUnmount() { 
+    clearInterval(this.state.timer)
+  }
+  intervalCallback = () => {
+    const dataKeys = Object.keys(this.props.data);
+    this.setState({ 
+      randomIndex: Math.floor(Math.random() * dataKeys.length)
+    })
+  }
+  toogleTimer = () => {
+    const {hasStarted, timer, randomIndex} = this.state;
+    const {data, blockStop, onStop} = this.props;
     if(hasStarted) {
-      setStarted(false)
+      if (blockStop) return;
+      this.setState({hasStarted: false})
       clearInterval(timer)
-    } else {
-      setStarted(true)
-      setTimer(setInterval(intervalCallback));
-    }
-  }, [hasStarted, timer, intervalCallback])
-  React.useEffect(() => {
-    toogleTimer()
-    return () => {
-      clearInterval(timer)
-    }
-  }, [])
-  return (
-    <div onClick={toogleTimer} style={{cursor: 'pointer'}}>
-      {
-        props.render(props.data[randomIndex])
+      if (onStop) {
+        onStop(data[randomIndex])
       }
-    </div>
-  )
+    } else {
+      this.setState({hasStarted: true})
+      this.setState({ timer: setInterval(this.intervalCallback) });
+      if (onStop) {
+        onStop()
+      }
+    }
+  }
+  render () {
+    const {randomIndex} = this.state;
+    const {render, data} = this.props;
+    return (
+      <div onClick={this.toogleTimer} style={{cursor: 'pointer'}}>
+        {
+          render(data[randomIndex])
+        }
+      </div>
+    )
+  }
 }
