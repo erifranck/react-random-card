@@ -1,0 +1,24 @@
+.card {
+  &-wrapper {
+    padding: 20px;
+    border-radius: 20px;
+    margin: auto;
+    max-width: 600px;
+    background: white;
+    box-shadow: 0px 3px 6px #00000029;
+  }
+  &-title {
+    text-align: left;
+    margin-bottom: 10px;
+    font-size: 66px;
+    white-space: nowrap;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: Sketch3D;
+  }
+  &-subtitle {
+    text-align: left;
+    font-size: 36px;
+  }
+}
